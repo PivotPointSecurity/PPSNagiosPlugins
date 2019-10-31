@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Some services are named differently between distribution flavors
+# For example: ssh on debian flavors, while sshd on rh flavors.
+#
+# This should be backwards compatible with the older check_init_service
+
+[ -z "$1" ] && {
+   echo 'Use:'
+   echo "$0 unit"
+   echo
+   echo "Will check if the specified unit is active, and alert if not"
+   exit 1
+}
+ostype='debian'
+IFS="="
+while read -r name value
+do
+  if [ "${name}" == 'ID_LIKE' ]; then
+    ostype="${value}"
+  fi
+done < /etc/os-release
+
+service="$1"
+svcext="d"
+
+# Currently only checking ssh & cron.  If the list grows, i'll convert it to a list.
+
+if [ "$service" == "ssh" ] || [ "$service" == "cron" ]; then
+  if [ "$ostype" != debian ]; then
+    service="$service$svcext"
+  fi
+fi
+
+result=$(systemctl is-active "$service")
+rc=$?
+
+if [ $rc -eq 0 ]; then
+   echo "OK: $result"
+   exit 0
+else
+   echo "Problem: $result"
+   exit 2
+fi
