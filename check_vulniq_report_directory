@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+# Predefined NAGIOS exit codes.
+%exit_codes   = ('UNKNOWN' ,-1,
+                 'OK'      , 0,
+                 'WARNING' , 1,
+                 'CRITICAL', 2,);
+
+
+
+sub usage()
+{
+  print "\ncheck_vulniq_report_dir (Nagios Plugin v1.0)";
+  print "\n  Check that vulniq is processing reports.";
+  print "\nUsage:";
+  print "\n  check_vulniq_report_dir\n\n";
+  exit  $exit_codes{'OK'};
+}
+
+
+
+if ($#ARGV ge 0)
+{ &usage; }
+
+chomp($vcheck = `ls -l /opt/Vuln_IQ/reports | wc -l`);
+
+if ($vcheck > 5)
+{
+  print "Vuln IQ CRITICAL:  Reports are backed up. ($vcheck) Reports.\n";
+  exit $exit_codes{'CRITICAL'};
+}
+elsif ($vcheck > 0 && $vcheck <= 5)
+{
+  print "Vuln IQ WARNING:  Reports are starting to back up. ($vcheck) Reports.\n";
+  exit $exit_codes{'WARNING'};
+}
+else
+{
+  print "Vuln IQ OK:  Reports are being processed.\n";
+  exit $exit_codes{'OK'};
+}
