@@ -22,6 +22,11 @@ if ($#ARGV ge 0)
 { &usage; }
 
 chomp($vcheck = `ls -l /opt/Vuln_IQ/reports | wc -l`);
+if ($vcheck == 1)
+{
+    chomp($dcheck = `ls -l /opt/Vuln_IQ/reports`);
+    if ($dcheck =~ /^total/){ $vcheck = 0; }
+}
 
 if ($vcheck > 5)
 {
